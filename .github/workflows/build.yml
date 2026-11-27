@@ -1,0 +1,24 @@
+name: Build Comet OS ISO
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y build-essential gcc-multilib nasm grub-pc-bin grub-common xorriso mtools
+      - name: Build
+        run: |
+          D=$(dirname "$(find . -name Makefile -not -path './.git/*' | head -1)")
+          echo "Building in: $D"
+          ls -la "$D"
+          cd "$D"
+          make iso
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp comet-os.iso "$GITHUB_WORKSPACE/out/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: comet-os-iso
+          path: out/comet-os.iso
